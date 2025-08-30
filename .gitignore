@@ -32,3 +32,6 @@ backend/uploads/
 # flow cli artifacts
 flow-cli.zip
 flow-cli-temp/
+
+# internal assistant instructions (do not commit)
+.github/instructions/
