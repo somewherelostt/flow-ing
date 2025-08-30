@@ -25,3 +25,10 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# app data
+backend/uploads/
+
+# flow cli artifacts
+flow-cli.zip
+flow-cli-temp/
