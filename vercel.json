@@ -1,0 +1,18 @@
+{
+  "buildCommand": "npm run build",
+  "outputDirectory": ".next",
+  "framework": "nextjs",
+  "env": {
+    "NEXT_PUBLIC_FLOW_ACCESS_NODE": "https://rest-testnet.onflow.org",
+    "NEXT_PUBLIC_FLOW_WALLET_DISCOVERY": "https://fcl-discovery.onflow.org/testnet/authn",
+    "NEXT_PUBLIC_KAIZEN_EVENT_CONTRACT": "0x01",
+    "NEXT_PUBLIC_KAIZEN_NFT_CONTRACT": "0x01",
+    "NEXT_PUBLIC_APP_NAME": "Kaizen Event Platform",
+    "NEXT_PUBLIC_API_URL": "https://kaizen-web3-app-production.up.railway.app"
+  },
+  "functions": {
+    "app/api/**/*.ts": {
+      "maxDuration": 30
+    }
+  }
+}
