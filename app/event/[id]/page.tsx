@@ -1,10 +1,34 @@
 "use client";
 
-import { ArrowLeft, Heart, MapPin, Calendar, Share } from "lucide-react";
+import {
+  ArrowLeft,
+  Heart,
+  MapPin,
+  Calendar,
+  Share,
+  Trash2,
+  MoreVertical,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { PurchaseModal } from "@/components/purchase-modal";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import {
   getEventStatus,
   formatEventDate,
@@ -12,6 +36,7 @@ import {
 } from "@/lib/eventUtils";
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function EventDetailPage({
   params,
@@ -19,12 +44,52 @@ export default function EventDetailPage({
   params: { id: string };
 }) {
   const router = useRouter();
+  const { user, isAuthenticated } = useAuth();
   const [showPurchaseModal, setShowPurchaseModal] = useState(false);
   const [walletConnected] = useState(false);
   const [event, setEvent] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   const eventStatus = event ? getEventStatus(event.date) : null;
+
+  // Check if user can delete this event
+  const canDeleteEvent = () => {
+    if (!isAuthenticated || !user || !event) return false;
+
+    // User can delete their own events
+    if (event.createdBy && event.createdBy._id === user._id) return true;
+
+    // For now, allow deletion if no creator info (legacy events)
+    if (!event.createdBy) return true;
+
+    return false;
+  };
+
+  // Delete event function
+  const handleDeleteEvent = async () => {
+    if (!event || deleting) return;
+
+    setDeleting(true);
+    try {
+      const response = await fetch(`/api/events/${params.id}`, {
+        method: "DELETE",
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to delete event");
+      }
+
+      // Navigate back to calendar or home page after deletion
+      router.push("/calendar");
+    } catch (error) {
+      console.error("Error deleting event:", error);
+      alert("Failed to delete event. Please try again.");
+    } finally {
+      setDeleting(false);
+    }
+  };
 
   useEffect(() => {
     async function fetchEvent() {
@@ -79,13 +144,40 @@ export default function EventDetailPage({
           >
             <ArrowLeft className="w-5 h-5" />
           </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="bg-kaizen-dark-gray/80 text-kaizen-white hover:bg-kaizen-dark-gray rounded-full"
-          >
-            <Share className="w-5 h-5" />
-          </Button>
+          <div className="flex gap-2">
+            {canDeleteEvent() && (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="bg-kaizen-dark-gray/80 text-kaizen-white hover:bg-kaizen-dark-gray rounded-full"
+                  >
+                    <MoreVertical className="w-5 h-5" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent
+                  align="end"
+                  className="bg-kaizen-dark-gray border-kaizen-gray/30"
+                >
+                  <DropdownMenuItem
+                    onClick={() => setDeleteDialogOpen(true)}
+                    className="text-red-400 hover:bg-red-400/10 cursor-pointer"
+                  >
+                    <Trash2 className="w-4 h-4 mr-2" />
+                    Delete Event
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
+            <Button
+              variant="ghost"
+              size="icon"
+              className="bg-kaizen-dark-gray/80 text-kaizen-white hover:bg-kaizen-dark-gray rounded-full"
+            >
+              <Share className="w-5 h-5" />
+            </Button>
+          </div>
         </div>
       </div>
 
@@ -239,6 +331,47 @@ export default function EventDetailPage({
         isWalletConnected={walletConnected}
         onConnectWallet={() => {}}
       />
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent className="bg-kaizen-dark-gray border-kaizen-gray/30 text-kaizen-white max-w-sm mx-auto">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-kaizen-white">
+              Delete Event
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-kaizen-gray">
+              Are you sure you want to delete "{event?.title}"? This action
+              cannot be undone and all associated data will be permanently
+              removed.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel
+              className="bg-kaizen-gray/20 text-kaizen-white border-kaizen-gray/30 hover:bg-kaizen-gray/30"
+              disabled={deleting}
+            >
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteEvent}
+              disabled={deleting}
+              className="bg-red-600 text-white hover:bg-red-700"
+            >
+              {deleting ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
+                  Deleting...
+                </>
+              ) : (
+                <>
+                  <Trash2 className="w-4 h-4 mr-2" />
+                  Delete Event
+                </>
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

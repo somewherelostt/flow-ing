@@ -14,8 +14,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { WalletConnect } from "@/components/wallet-connect";
-import { WalletStatus } from "@/components/wallet-status";
 import { FlowWalletConnect } from "@/components/flow-wallet-connect";
 import { FlowWalletStatus } from "@/components/flow-wallet-status";
 import { PurchaseModal } from "@/components/purchase-modal";

@@ -6,6 +6,7 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { BottomNav } from "@/components/bottom-nav";
 import { FlowWalletProvider } from "@/contexts/FlowWalletContext";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { ClientProvider } from "./client-provider";
 
 const urbanist = Urbanist({
   subsets: ["latin"],
@@ -31,20 +32,22 @@ export default function RootLayout({
         className="font-sans antialiased bg-black text-white min-h-screen"
         suppressHydrationWarning
       >
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="dark"
-          enableSystem={false}
-          disableTransitionOnChange
-        >
-          <AuthProvider>
-            <FlowWalletProvider>
-              {children}
-              {/* Bottom Navigation Bar */}
-              <BottomNav />
-            </FlowWalletProvider>
-          </AuthProvider>
-        </ThemeProvider>
+        <ClientProvider>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="dark"
+            enableSystem={false}
+            disableTransitionOnChange
+          >
+            <AuthProvider>
+              <FlowWalletProvider>
+                {children}
+                {/* Bottom Navigation Bar */}
+                <BottomNav />
+              </FlowWalletProvider>
+            </AuthProvider>
+          </ThemeProvider>
+        </ClientProvider>
       </body>
     </html>
   );

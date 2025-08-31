@@ -1,27 +1,6 @@
 import * as fcl from "@onflow/fcl";
 import * as types from "@onflow/types";
 
-// Flow configuration
-export const flowConfig = {
-  "accessNode.api":
-    process.env.NEXT_PUBLIC_FLOW_ACCESS_NODE ||
-    "https://rest-testnet.onflow.org",
-  "discovery.wallet":
-    process.env.NEXT_PUBLIC_FLOW_WALLET_DISCOVERY ||
-    "https://fcl-discovery.onflow.org/testnet/authn",
-  "app.detail.title": "Kaizen - Flow Event Platform",
-  "app.detail.icon": "https://kaizen-x-delta.vercel.app/kaizen-logo.svg",
-  "service.OpenID.scopes": "email",
-  // WalletConnect Project ID - required for certain wallet integrations
-  "walletconnect.projectId":
-    process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID ||
-    "2f5a1b1c8b4a3d9e7f6c8d9e0f1a2b3c", // Default placeholder - replace with your actual project ID
-  // Remove account proof for now to avoid nonce issues
-};
-
-// Configure FCL
-fcl.config(flowConfig);
-
 // Contract addresses (testnet - Cadence 1.0)
 export const CONTRACT_ADDRESSES = {
   KAIZEN_EVENT: process.env.NEXT_PUBLIC_KAIZEN_EVENT_CONTRACT || "0x01",
@@ -32,14 +11,43 @@ export const CONTRACT_ADDRESSES = {
   METADATA_VIEWS: "0x1d7e57aa55817448", // Metadata views on testnet
 };
 
-// Authentication functions
-export const authenticate = () => fcl.authenticate();
-export const unauthenticate = () => fcl.unauthenticate();
+// Authentication functions with error handling
+export const authenticate = async () => {
+  try {
+    return await fcl.authenticate();
+  } catch (error) {
+    console.error("Authentication error:", error);
+    throw error;
+  }
+};
 
-// User authentication state
-export const getCurrentUser = () => fcl.currentUser().snapshot();
-export const subscribeToUser = (callback: any) =>
-  fcl.currentUser().subscribe(callback);
+export const unauthenticate = async () => {
+  try {
+    return await fcl.unauthenticate();
+  } catch (error) {
+    console.error("Unauthentication error:", error);
+    throw error;
+  }
+};
+
+// User authentication state with error handling
+export const getCurrentUser = async () => {
+  try {
+    return await fcl.currentUser().snapshot();
+  } catch (error) {
+    console.error("Error getting current user:", error);
+    return null;
+  }
+};
+
+export const subscribeToUser = (callback: any) => {
+  try {
+    return fcl.currentUser().subscribe(callback);
+  } catch (error) {
+    console.error("Error subscribing to user:", error);
+    return () => {}; // Return empty unsubscribe function
+  }
+};
 
 // Scripts (Read-only operations)
 

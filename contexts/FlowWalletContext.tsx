@@ -9,6 +9,7 @@ import React, {
 } from "react";
 import * as fcl from "@onflow/fcl";
 import { getUserFlowBalance } from "@/lib/flow";
+import { initializeFlowClient } from "@/lib/flow-client";
 
 interface FlowWalletState {
   isConnected: boolean;
@@ -53,32 +54,65 @@ export function FlowWalletProvider({ children }: FlowWalletProviderProps) {
     user: null,
   });
 
+  // Initialize Flow client on mount
+  useEffect(() => {
+    initializeFlowClient();
+  }, []);
+
   // Subscribe to FCL user changes
   useEffect(() => {
-    const unsubscribe = fcl.currentUser.subscribe((user: any) => {
-      if (user?.loggedIn) {
-        setWalletState((prev: FlowWalletState) => ({
-          ...prev,
-          isConnected: true,
-          address: user.addr || "",
-          user: user,
-          walletName: getWalletName(user),
-        }));
-        // Fetch balance when user connects
-        fetchBalance(user.addr);
-      } else {
-        setWalletState((prev: FlowWalletState) => ({
-          ...prev,
-          isConnected: false,
-          address: "",
-          balance: "0",
-          user: null,
-          walletName: "",
-        }));
-      }
-    });
+    let unsubscribe: (() => void) | undefined;
 
-    return () => unsubscribe();
+    try {
+      unsubscribe = fcl.currentUser.subscribe((user: any) => {
+        try {
+          if (user?.loggedIn) {
+            setWalletState((prev: FlowWalletState) => ({
+              ...prev,
+              isConnected: true,
+              address: user.addr || "",
+              user: user,
+              walletName: getWalletName(user),
+              error: null,
+            }));
+            // Fetch balance when user connects
+            fetchBalance(user.addr);
+          } else {
+            setWalletState((prev: FlowWalletState) => ({
+              ...prev,
+              isConnected: false,
+              address: "",
+              balance: "0",
+              user: null,
+              walletName: "",
+              error: null,
+            }));
+          }
+        } catch (error) {
+          console.error("Error in user subscription callback:", error);
+          setWalletState((prev: FlowWalletState) => ({
+            ...prev,
+            error: "Failed to process wallet state",
+          }));
+        }
+      });
+    } catch (error) {
+      console.error("Error setting up user subscription:", error);
+      setWalletState((prev: FlowWalletState) => ({
+        ...prev,
+        error: "Failed to initialize wallet connection",
+      }));
+    }
+
+    return () => {
+      if (unsubscribe) {
+        try {
+          unsubscribe();
+        } catch (error) {
+          console.error("Error unsubscribing from user changes:", error);
+        }
+      }
+    };
   }, []);
 
   const getWalletName = (user: any): string => {
@@ -129,9 +163,14 @@ export function FlowWalletProvider({ children }: FlowWalletProviderProps) {
       console.log("Starting wallet authentication...");
 
       // Clear any existing authentication first
-      const currentUserSnapshot = await fcl.currentUser().snapshot();
-      if (currentUserSnapshot?.loggedIn) {
-        await fcl.unauthenticate();
+      try {
+        const currentUserSnapshot = await fcl.currentUser().snapshot();
+        if (currentUserSnapshot?.loggedIn) {
+          await fcl.unauthenticate();
+        }
+      } catch (error) {
+        console.warn("Warning clearing existing authentication:", error);
+        // Continue with authentication even if clearing fails
       }
 
       await fcl.authenticate();
@@ -147,7 +186,8 @@ export function FlowWalletProvider({ children }: FlowWalletProviderProps) {
       if (
         error.message?.includes("declined") ||
         error.message?.includes("rejected") ||
-        error.message?.includes("denied")
+        error.message?.includes("denied") ||
+        error.message?.includes("User rejected")
       ) {
         errorMessage =
           "Wallet connection was rejected. Please try again and approve the connection.";
@@ -155,6 +195,11 @@ export function FlowWalletProvider({ children }: FlowWalletProviderProps) {
         errorMessage = "Authentication error. Please try connecting again.";
       } else if (error.message?.includes("account proof")) {
         errorMessage = "Account verification failed. Please try again.";
+      } else if (error.message?.includes("No services")) {
+        errorMessage =
+          "No wallet services available. Please install a Flow wallet extension.";
+      } else if (error.message?.includes("timeout")) {
+        errorMessage = "Connection timed out. Please try again.";
       } else if (error.message) {
         errorMessage = error.message;
       }
