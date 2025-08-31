@@ -8,7 +8,7 @@
     "NEXT_PUBLIC_KAIZEN_EVENT_CONTRACT": "0x01",
     "NEXT_PUBLIC_KAIZEN_NFT_CONTRACT": "0x01",
     "NEXT_PUBLIC_APP_NAME": "Kaizen Event Platform",
-    "NEXT_PUBLIC_API_URL": "https://kaizen-web3-app-production.up.railway.app"
+    "NEXT_PUBLIC_API_URL": "https://flow-ing.onrender.com"
   },
   "functions": {
     "app/api/**/*.ts": {
