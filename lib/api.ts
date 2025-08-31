@@ -8,7 +8,11 @@ export const API_BASE_URL =
 
 export const apiUrl = (endpoint: string) => {
   // Use Next.js API routes for auth and user endpoints to avoid CORS issues
-  if (endpoint.includes('/api/login') || endpoint.includes('/api/register') || endpoint.includes('/api/users/me')) {
+  if (
+    endpoint.includes("/api/login") ||
+    endpoint.includes("/api/register") ||
+    endpoint.includes("/api/users/me")
+  ) {
     // Return relative URL for Next.js API routes
     return endpoint;
   }
