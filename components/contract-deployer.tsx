@@ -32,7 +32,7 @@ export function ContractDeployer({ isOpen, onClose }: ContractDeployerProps) {
     setDeploymentStatus("Deploying all contracts...");
 
     try {
-      // Use the new browser-based deployment method
+      // Use the improved browser-based deployment method
       const result = await deployAllContracts();
 
       if (result.success) {
@@ -49,12 +49,22 @@ export function ContractDeployer({ isOpen, onClose }: ContractDeployerProps) {
         console.log("💡 Update your .env.local file with:");
         console.log(`   NEXT_PUBLIC_KAIZEN_EVENT_CONTRACT=${address}`);
         console.log(`   NEXT_PUBLIC_KAIZEN_NFT_CONTRACT=${address}`);
+
+        // Show success message to user
+        alert(
+          `✅ Contracts deployed successfully!\n\nNew contract addresses: ${address}\n\nPlease create a .env.local file with:\nNEXT_PUBLIC_KAIZEN_EVENT_CONTRACT=${address}\nNEXT_PUBLIC_KAIZEN_NFT_CONTRACT=${address}`
+        );
       } else {
         throw new Error(`Deployment failed`);
       }
     } catch (err: any) {
       console.error("Error deploying contracts:", err);
       setError(`Failed to deploy contracts: ${err.message}`);
+
+      // Show detailed error to user
+      alert(
+        `❌ Deployment failed!\n\nError: ${err.message}\n\nPlease check the browser console for more details.`
+      );
     } finally {
       setIsDeploying(false);
     }

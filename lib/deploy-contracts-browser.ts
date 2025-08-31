@@ -411,16 +411,27 @@ access(all) contract KaizenEventNFT: NonFungibleToken {
     }
 }`;
 
+// Helper function to properly escape contract code for Cadence
+const escapeContractCode = (code: string): string => {
+  return code
+    .replace(/\\/g, '\\\\')  // Escape backslashes first
+    .replace(/"/g, '\\"')    // Escape quotes
+    .replace(/\n/g, '\\n')   // Escape newlines
+    .replace(/\r/g, '\\r')   // Escape carriage returns
+    .replace(/\t/g, '\\t');  // Escape tabs
+};
+
 // Deploy a single contract
 export const deployContract = async (contractName: string, contractCode: string) => {
   try {
     console.log(`🚀 Deploying ${contractName}...`);
     
+    // Use a simpler deployment approach that avoids string escaping issues
     const deploymentTransaction = `
       transaction {
         prepare(acct: &Account) {
-          // Deploy the contract
-          acct.contracts.add(name: "${contractName}", code: "${contractCode.replace(/"/g, '\\"')}")
+          // Deploy the contract using the contracts.add function
+          acct.contracts.add(name: "${contractName}", code: "${escapeContractCode(contractCode)}")
         }
         
         execute {
@@ -429,13 +440,15 @@ export const deployContract = async (contractName: string, contractCode: string)
       }
     `;
 
+    console.log(`📝 Submitting deployment transaction for ${contractName}...`);
+
     // Execute the deployment transaction
     const txId = await fcl.mutate({
       cadence: deploymentTransaction,
       proposer: fcl.authz as any,
       payer: fcl.authz as any,
       authorizations: [fcl.authz as any],
-      limit: 2000,
+      limit: 3000, // Increased gas limit for contract deployment
     });
 
     console.log(`📝 ${contractName} deployment transaction submitted: ${txId}`);

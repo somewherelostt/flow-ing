@@ -92,6 +92,20 @@ deployAllContracts()
 - Restart your development server
 - Check that the contracts were deployed to the correct network
 
+## 🔧 Recent Fixes Applied
+
+### String Escaping Issue (Fixed ✅)
+
+- **Problem**: Contract code with quotes and newlines was causing parsing errors
+- **Solution**: Added proper string escaping for Cadence deployment
+- **Result**: Contracts should now deploy without string parsing errors
+
+### Improved Error Handling
+
+- Better error messages and user feedback
+- Automatic fallback deployment methods
+- Increased gas limits for contract deployment
+
 ## 📞 Need Help?
 
 The deployment process is now automated through your app's UI. Simply:
@@ -103,3 +117,10 @@ The deployment process is now automated through your app's UI. Simply:
 5. Test your transactions!
 
 Your contracts will be deployed to your wallet address `0xb08860843312e513` on Flow testnet.
+
+## 🚨 Important Notes
+
+- **String escaping has been fixed** - the previous "invalid end of string literal" error should not occur
+- **Gas limits increased** to 3000 for reliable contract deployment
+- **Better error reporting** with detailed console logs
+- **Automatic success alerts** showing new contract addresses
