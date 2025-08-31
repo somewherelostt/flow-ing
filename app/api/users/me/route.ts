@@ -13,7 +13,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Get the backend API URL from environment
-    const backendUrl = process.env.NEXT_PUBLIC_API_URL || "https://kaizenx-production.up.railway.app";
+    const backendUrl = process.env.NEXT_PUBLIC_API_URL || "https://flow-ing.onrender.com";
     
     console.log("Getting user data via backend:", backendUrl);
     

@@ -32,7 +32,7 @@ export default function SearchPage() {
     setHasSearched(true);
     
     try {
-      const response = await fetch(`https://kaizenx-production.up.railway.app/api/events/search/${encodeURIComponent(searchQuery)}`);
+      const response = await fetch(`https://flow-ing.onrender.com/api/events/search/${encodeURIComponent(searchQuery)}`);
       if (response.ok) {
         const results = await response.json();
         setSearchResults(results);
@@ -110,7 +110,7 @@ export default function SearchPage() {
                   {/* Event Image */}
                   <div className="w-16 h-16 rounded-lg overflow-hidden flex-shrink-0">
                     <img
-                      src={event.imageUrl ? `https://kaizenx-production.up.railway.app${event.imageUrl}` : "/placeholder.jpg"}
+                      src={event.imageUrl ? `https://flow-ing.onrender.com${event.imageUrl}` : "/placeholder.jpg"}
                       alt={event.title}
                       className="w-full h-full object-cover"
                       onError={(e) => {

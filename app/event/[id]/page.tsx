@@ -95,7 +95,7 @@ export default function EventDetailPage({
     async function fetchEvent() {
       try {
         const res = await fetch(
-          `https://kaizenx-production.up.railway.app/api/events/${params.id}`
+          `https://flow-ing.onrender.com/api/events/${params.id}`
         );
         if (!res.ok) throw new Error("Failed to fetch event");
         const data = await res.json();
@@ -126,7 +126,7 @@ export default function EventDetailPage({
           src={
             event.imageUrl
               ? event.imageUrl.startsWith("/uploads/")
-                ? `https://kaizenx-production.up.railway.app${event.imageUrl}`
+                ? `https://flow-ing.onrender.com${event.imageUrl}`
                 : event.imageUrl
               : "/placeholder.svg"
           }

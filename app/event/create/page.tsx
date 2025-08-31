@@ -28,7 +28,7 @@ export default function CreateEventPage() {
 
   const fetchUser = async () => {
     const res = await fetch(
-      "https://kaizenx-production.up.railway.app/api/users/me",
+      "https://flow-ing.onrender.com/api/users/me",
       {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -86,7 +86,7 @@ export default function CreateEventPage() {
       if (image) formData.append("image", image);
 
       const res = await fetch(
-        "https://kaizenx-production.up.railway.app/api/events",
+        "https://flow-ing.onrender.com/api/events",
         {
           method: "POST",
           body: formData,

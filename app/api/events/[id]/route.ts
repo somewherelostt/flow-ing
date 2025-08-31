@@ -12,7 +12,7 @@ export async function DELETE(
 
     // Forward the delete request to your backend API
     const response = await fetch(
-      `https://kaizenx-production.up.railway.app/api/events/${id}`,
+      `https://flow-ing.onrender.com/api/events/${id}`,
       {
         method: "DELETE",
         headers: {
@@ -47,7 +47,7 @@ export async function GET(
 
     // Forward the request to your backend API
     const response = await fetch(
-      `https://kaizenx-production.up.railway.app/api/events/${id}`,
+      `https://flow-ing.onrender.com/api/events/${id}`,
       {
         method: "GET",
         headers: {

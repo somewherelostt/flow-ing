@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 export async function GET() {
   try {
     // Test connection to backend
-    const backendUrl = process.env.NEXT_PUBLIC_API_URL || "https://kaizenx-production.up.railway.app";
+    const backendUrl = process.env.NEXT_PUBLIC_API_URL || "https://flow-ing.onrender.com";
     
     const backendResponse = await fetch(`${backendUrl}/api/health`, {
       method: "GET",
