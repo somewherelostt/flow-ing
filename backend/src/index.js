@@ -319,6 +319,13 @@ if (!dbUrl.startsWith("mongodb://") && !dbUrl.startsWith("mongodb+srv://")) {
 
 mongoose.connect(dbUrl, {
   ssl: true,
+  tlsAllowInvalidCertificates: process.env.NODE_ENV === 'production',
+  tlsInsecure: process.env.NODE_ENV === 'production',
+  serverSelectionTimeoutMS: 30000,
+  socketTimeoutMS: 45000,
+  bufferMaxEntries: 0,
+  useNewUrlParser: true,
+  useUnifiedTopology: true
 });
 const db = mongoose.connection;
 db.on("error", console.error.bind(console, "MongoDB connection error:"));
