@@ -29,9 +29,8 @@ app.use(
       "http://localhost:3000",
       "http://localhost:3001",
       "http://192.168.1.10:3000",
-      "https://kaizen-web3-app.vercel.app",
-      "https://kaizen-web3-app-git-main-somewherelostt.vercel.app",
-      "https://kaizen-x-delta.vercel.app",
+      "https://flow-ing.vercel.app/",
+    
       // Add patterns for your new Vercel deployment
       /^https:\/\/flow-ing-.*\.vercel\.app$/,
       /^https:\/\/kaizen-web3-app-.*\.vercel\.app$/,
