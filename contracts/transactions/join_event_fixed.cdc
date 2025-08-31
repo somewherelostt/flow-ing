@@ -1,4 +1,4 @@
-import KaizenEvent from 0x045a1763c93006ca  // This is a placeholder - update with real deployed address
+import KaizenEvent from 0xb03ac3adafdd51f2  // Updated with your deployed contract address
 import FlowToken from 0x7e60df042a9c0868
 import FungibleToken from 0x9a0766d93b6608b7
 
@@ -11,8 +11,8 @@ transaction(eventId: UInt64, amount: UFix64) {
         self.attendeeAddress = attendee.address
         
         // Get public reference to the EventManager
-        // Update this address to match where your contract is actually deployed
-        self.eventManagerRef = getAccount(0x045a1763c93006ca)
+        // Updated to match your deployed contract address
+        self.eventManagerRef = getAccount(0xb03ac3adafdd51f2)
             .capabilities.get<&{KaizenEvent.EventManagerPublic}>(KaizenEvent.EventPublicPath)
             .borrow()
             ?? panic("Could not get EventManager reference")

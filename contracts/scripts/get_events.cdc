@@ -1,7 +1,7 @@
-import KaizenEvent from 0x045a1763c93006ca
+import KaizenEvent from 0xb03ac3adafdd51f2
 
 access(all) fun main(): [KaizenEvent.EventInfo] {
-    let eventManagerRef = getAccount(0x045a1763c93006ca)
+    let eventManagerRef = getAccount(0xb03ac3adafdd51f2)
         .capabilities.get<&{KaizenEvent.EventManagerPublic}>(
             KaizenEvent.EventPublicPath
         ).borrow()
