@@ -9,6 +9,7 @@ import {
   MapPin,
   Clock,
   User,
+  Upload,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -18,6 +19,7 @@ import { FlowWalletConnect } from "@/components/flow-wallet-connect";
 import { FlowWalletStatus } from "@/components/flow-wallet-status";
 import { PurchaseModal } from "@/components/purchase-modal";
 import { AuthModal } from "@/components/auth-modal";
+import { ContractDeployer } from "@/components/contract-deployer";
 import { getEventStatus, isEventCompleted } from "@/lib/eventUtils";
 import { useAuth } from "@/contexts/AuthContext";
 import { apiUrl, imageUrl } from "@/lib/api";
@@ -30,6 +32,7 @@ export default function KaizenApp() {
   const [showWalletConnect, setShowWalletConnect] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [showPurchaseModal, setShowPurchaseModal] = useState(false);
+  const [showContractDeployer, setShowContractDeployer] = useState(false);
   const { isConnected } = useFlowWallet();
   const { user, isAuthenticated, isLoading: authLoading } = useAuth();
   const router = useRouter();
@@ -125,6 +128,17 @@ export default function KaizenApp() {
         )}
         <div className="flex items-center gap-2">
           <FlowWalletStatus onConnect={() => setShowWalletConnect(true)} />
+          {isConnected && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="text-kaizen-white hover:bg-kaizen-dark-gray"
+              onClick={() => setShowContractDeployer(true)}
+              title="Deploy Contracts"
+            >
+              <Upload className="w-5 h-5" />
+            </Button>
+          )}
           <Button
             variant="ghost"
             size="icon"
@@ -546,6 +560,11 @@ export default function KaizenApp() {
         eventId={currentSelectedEvent._id}
         organizerAddress={currentSelectedEvent.createdBy?.walletAddress}
         hasNFTReward={true}
+      />
+
+      <ContractDeployer
+        isOpen={showContractDeployer}
+        onClose={() => setShowContractDeployer(false)}
       />
     </div>
   );

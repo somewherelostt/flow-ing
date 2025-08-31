@@ -14,11 +14,7 @@
       "key": "c1c08130b4c1c338f867d2427aeb4c70c20cb25a5b3fd2db75f6b2b8c2ce0b5b"
     },
     "testnet-account": {
-      "address": "0xb03ac3adafdd51f2",
-      "key": {
-        "type": "file",
-        "location": "./testnet-account-key.pem"
-      }
+      "address": "0xb03ac3adafdd51f2"
     }
   },
   "deployments": {
