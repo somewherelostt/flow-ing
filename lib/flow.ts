@@ -3,8 +3,10 @@ import * as types from "@onflow/types";
 
 // Contract addresses (testnet - Cadence 1.0)
 export const CONTRACT_ADDRESSES = {
-  KAIZEN_EVENT: process.env.NEXT_PUBLIC_KAIZEN_EVENT_CONTRACT || "0x01",
-  KAIZEN_NFT: process.env.NEXT_PUBLIC_KAIZEN_NFT_CONTRACT || "0x01",
+  KAIZEN_EVENT:
+    process.env.NEXT_PUBLIC_KAIZEN_EVENT_CONTRACT || "0xb08860843312e513",
+  KAIZEN_NFT:
+    process.env.NEXT_PUBLIC_KAIZEN_NFT_CONTRACT || "0xb08860843312e513",
   FLOW_TOKEN: "0x7e60df042a9c0868", // Flow token address on testnet
   FUNGIBLE_TOKEN: "0x9a0766d93b6608b7", // FungibleToken standard on testnet
   NON_FUNGIBLE_TOKEN: "0x1d7e57aa55817448", // NFT standard on testnet

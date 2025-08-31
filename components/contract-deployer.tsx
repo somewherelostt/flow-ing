@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { AlertCircle, CheckCircle, Loader2, Upload } from "lucide-react";
 import { useFlowWallet } from "@/contexts/FlowWalletContext";
-import * as fcl from "@onflow/fcl";
+import { deployAllContractsSimple } from "@/lib/deploy-contracts-simple";
 
 interface ContractDeployerProps {
   isOpen: boolean;
@@ -21,7 +21,7 @@ export function ContractDeployer({ isOpen, onClose }: ContractDeployerProps) {
 
   if (!isOpen) return null;
 
-  const deployContract = async (contractName: string, contractCode: string) => {
+  const deployContract = async (contractName: string) => {
     if (!isConnected || !address) {
       setError("Please connect your Flow wallet first");
       return;
@@ -32,30 +32,16 @@ export function ContractDeployer({ isOpen, onClose }: ContractDeployerProps) {
     setDeploymentStatus(`Deploying ${contractName}...`);
 
     try {
-      // Deploy the contract
-      const txId = await fcl.mutate({
-        cadence: contractCode,
-        proposer: fcl.authz as any,
-        payer: fcl.authz as any,
-        authorizations: [fcl.authz as any],
-        limit: 2000,
-      });
+      // Use the simplified deployment method
+      const result = await deployAllContractsSimple();
 
-      setDeploymentStatus(
-        `Waiting for ${contractName} deployment to be sealed...`
-      );
-
-      // Wait for transaction to be sealed
-      const result = await fcl.tx(txId).onceSealed();
-
-      if (result.status === 4) {
-        // 4 = sealed
+      if (result.success) {
         setDeployedContracts((prev) => [...prev, contractName]);
         setDeploymentStatus(
-          `${contractName} deployed successfully! Transaction: ${txId}`
+          `${contractName} deployed successfully! Transaction: ${result.eventResult.txId}`
         );
       } else {
-        throw new Error(`Deployment failed with status: ${result.status}`);
+        throw new Error(`Deployment failed`);
       }
     } catch (err: any) {
       console.error(`Error deploying ${contractName}:`, err);
@@ -250,7 +236,7 @@ export function ContractDeployer({ isOpen, onClose }: ContractDeployerProps) {
       }
     `;
 
-    await deployContract("KaizenEvent", contractCode);
+    await deployContract("KaizenEvent");
   };
 
   const deployKaizenEventNFT = async () => {
@@ -418,7 +404,7 @@ export function ContractDeployer({ isOpen, onClose }: ContractDeployerProps) {
       }
     `;
 
-    await deployContract("KaizenEventNFT", contractCode);
+    await deployContract("KaizenEventNFT");
   };
 
   const deployAllContracts = async () => {
