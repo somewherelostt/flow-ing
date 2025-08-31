@@ -27,14 +27,11 @@ export default function CreateEventPage() {
   const [user, setUser] = useState<User | null>(null);
 
   const fetchUser = async () => {
-    const res = await fetch(
-      "https://flow-ing.onrender.com/api/users/me",
-      {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-      }
-    );
+    const res = await fetch("https://flow-ing.onrender.com/api/users/me", {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    });
     if (res.ok) {
       const data = await res.json();
       setUser(data);
@@ -85,13 +82,10 @@ export default function CreateEventPage() {
 
       if (image) formData.append("image", image);
 
-      const res = await fetch(
-        "https://flow-ing.onrender.com/api/events",
-        {
-          method: "POST",
-          body: formData,
-        }
-      );
+      const res = await fetch("https://flow-ing.onrender.com/api/events", {
+        method: "POST",
+        body: formData,
+      });
 
       if (!res.ok) {
         const errorData = await res.json();

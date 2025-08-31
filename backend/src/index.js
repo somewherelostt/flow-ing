@@ -23,6 +23,7 @@ dotenv.config({
 const app = express();
 const port = process.env.PORT || 4000;
 
+// Enhanced CORS configuration to handle preflight requests
 app.use(
   cors({
     origin: [
@@ -37,11 +38,39 @@ app.use(
       /^https:\/\/kaizen-x-.*\.vercel\.app$/,
     ],
     credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+    optionsSuccessStatus: 200, // Support legacy browsers
   })
 );
 
+// Additional CORS handling for preflight requests
+app.options('*', cors({
+  origin: [
+    "http://localhost:3000",
+    "http://localhost:3001",
+    "http://192.168.1.10:3000",
+    "https://flow-ing.vercel.app",
+    /^https:\/\/flow-ing-.*\.vercel\.app$/,
+    /^https:\/\/kaizen-web3-app-.*\.vercel\.app$/,
+    /^https:\/\/kaizen-x-.*\.vercel\.app$/,
+  ],
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+}));
+
 app.use(express.json());
 app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
+
+// Debug middleware to log CORS requests
+app.use((req, res, next) => {
+  console.log(`${req.method} ${req.path} from origin: ${req.get('Origin') || 'unknown'}`);
+  if (req.method === 'OPTIONS') {
+    console.log('Preflight request detected');
+  }
+  next();
+});
 
 const pool = new Pool();
 

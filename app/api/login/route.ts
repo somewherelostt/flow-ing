@@ -6,10 +6,11 @@ export async function POST(request: NextRequest) {
     const { email, password } = body;
 
     // Get the backend API URL from environment
-    const backendUrl = process.env.NEXT_PUBLIC_API_URL || "https://flow-ing.onrender.com";
-    
+    const backendUrl =
+      process.env.NEXT_PUBLIC_API_URL || "https://flow-ing.onrender.com";
+
     console.log("Logging in user via backend:", backendUrl);
-    
+
     // Forward the request to the backend
     const response = await fetch(`${backendUrl}/api/login`, {
       method: "POST",
@@ -20,7 +21,7 @@ export async function POST(request: NextRequest) {
     });
 
     const data = await response.json();
-    
+
     if (!response.ok) {
       console.error("Backend login error:", data);
       return NextResponse.json(
@@ -31,7 +32,6 @@ export async function POST(request: NextRequest) {
 
     console.log("Login successful:", data);
     return NextResponse.json(data);
-    
   } catch (error) {
     console.error("Login API error:", error);
     return NextResponse.json(

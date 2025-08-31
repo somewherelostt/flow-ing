@@ -27,12 +27,16 @@ export default function SearchPage() {
 
   const handleSearch = async () => {
     if (!searchQuery.trim()) return;
-    
+
     setIsLoading(true);
     setHasSearched(true);
-    
+
     try {
-      const response = await fetch(`https://flow-ing.onrender.com/api/events/search/${encodeURIComponent(searchQuery)}`);
+      const response = await fetch(
+        `https://flow-ing.onrender.com/api/events/search/${encodeURIComponent(
+          searchQuery
+        )}`
+      );
       if (response.ok) {
         const results = await response.json();
         setSearchResults(results);
@@ -65,7 +69,7 @@ export default function SearchPage() {
     <div className="min-h-screen bg-kaizen-black text-kaizen-white max-w-sm mx-auto p-4">
       <div className="mb-6">
         <h1 className="text-2xl font-bold mb-4">Search Events</h1>
-        
+
         {/* Search Input */}
         <div className="flex gap-2 mb-4">
           <div className="flex-1 relative">
@@ -78,7 +82,7 @@ export default function SearchPage() {
               className="pl-10 bg-kaizen-gray/20 border-kaizen-gray/30 text-kaizen-white placeholder-kaizen-gray/60"
             />
           </div>
-          <Button 
+          <Button
             onClick={handleSearch}
             disabled={isLoading || !searchQuery.trim()}
             className="bg-kaizen-purple hover:bg-kaizen-purple/80"
@@ -91,14 +95,13 @@ export default function SearchPage() {
       {/* Search Results */}
       <div className="space-y-4">
         {isLoading && (
-          <div className="text-center text-kaizen-gray">
-            Searching...
-          </div>
+          <div className="text-center text-kaizen-gray">Searching...</div>
         )}
 
         {hasSearched && !isLoading && searchResults.length === 0 && (
           <div className="text-center text-kaizen-gray">
-            No events found for "{searchQuery}". Try searching with different keywords.
+            No events found for "{searchQuery}". Try searching with different
+            keywords.
           </div>
         )}
 
@@ -110,7 +113,11 @@ export default function SearchPage() {
                   {/* Event Image */}
                   <div className="w-16 h-16 rounded-lg overflow-hidden flex-shrink-0">
                     <img
-                      src={event.imageUrl ? `https://flow-ing.onrender.com${event.imageUrl}` : "/placeholder.jpg"}
+                      src={
+                        event.imageUrl
+                          ? `https://flow-ing.onrender.com${event.imageUrl}`
+                          : "/placeholder.jpg"
+                      }
                       alt={event.title}
                       className="w-full h-full object-cover"
                       onError={(e) => {
@@ -125,22 +132,24 @@ export default function SearchPage() {
                     <h3 className="font-semibold text-kaizen-white truncate mb-1">
                       {event.title}
                     </h3>
-                    
+
                     <div className="space-y-1 text-sm text-kaizen-gray">
                       <div className="flex items-center gap-1">
                         <Calendar className="h-3 w-3" />
                         <span>{formatDate(event.date)}</span>
                       </div>
-                      
+
                       <div className="flex items-center gap-1">
                         <MapPin className="h-3 w-3" />
                         <span className="truncate">{event.location}</span>
                       </div>
-                      
+
                       <div className="flex items-center gap-1">
                         <DollarSign className="h-3 w-3" />
                         <span>${event.price}</span>
-                        <span className="text-kaizen-gray/60">• {event.category}</span>
+                        <span className="text-kaizen-gray/60">
+                          • {event.category}
+                        </span>
                       </div>
                     </div>
                   </div>
