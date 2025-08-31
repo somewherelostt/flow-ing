@@ -4,7 +4,7 @@
 export const API_BASE_URL =
   process.env.NEXT_PUBLIC_BACKEND_URL ||
   process.env.NEXT_PUBLIC_API_URL ||
-  "https://kaizenx-production.up.railway.app";
+  "https://flow-ing.onrender.com";
 
 export const apiUrl = (endpoint: string) => {
   // Temporarily use backend directly for all endpoints until Vercel deployment is ready
