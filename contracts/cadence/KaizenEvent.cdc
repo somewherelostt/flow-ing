@@ -1,5 +1,5 @@
-import NonFungibleToken from 0x1d7e57aa55817448
-import MetadataViews from 0x1d7e57aa55817448
+import NonFungibleToken from 0x631e88ae7f1d7c20
+import MetadataViews from 0x631e88ae7f1d7c20  
 import FungibleToken from 0x9a0766d93b6608b7
 import FlowToken from 0x7e60df042a9c0868
 
@@ -57,7 +57,7 @@ access(all) contract KaizenEvent {
             self.attendeeCount = self.attendeeCount + 1
         }
     }
-    
+
     // Event Manager Resource
     access(all) resource EventManager {
         access(all) var events: {UInt64: EventInfo}
@@ -119,7 +119,9 @@ access(all) contract KaizenEvent {
             if self.attendees[eventId] == nil {
                 self.attendees[eventId] = {}
             }
-            self.attendees[eventId]![attendee] = true
+            let currentAttendees = self.attendees[eventId]!
+            currentAttendees[attendee] = true
+            self.attendees[eventId] = currentAttendees
             
             // Update attendee count
             let eventInfo = self.events[eventId]!

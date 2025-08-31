@@ -1,8 +1,8 @@
-import KaizenEvent from 0x01 // Replace with actual contract address
+import KaizenEvent from 0x045a1763c93006ca
 
 access(all) fun main(): [KaizenEvent.EventInfo] {
-    let eventManagerRef = getAccount(0x01) // Replace with contract account
-        .getCapability<&KaizenEvent.EventManager{KaizenEvent.EventManagerPublic}>(
+    let eventManagerRef = getAccount(0x045a1763c93006ca)
+        .capabilities.get<&{KaizenEvent.EventManagerPublic}>(
             KaizenEvent.EventPublicPath
         ).borrow()
         ?? panic("Could not get reference to EventManager")
