@@ -317,19 +317,100 @@ if (!dbUrl.startsWith("mongodb://") && !dbUrl.startsWith("mongodb+srv://")) {
   process.exit(1);
 }
 
-mongoose.connect(dbUrl, {
-  ssl: true,
-  tlsAllowInvalidCertificates: process.env.NODE_ENV === "production",
-  serverSelectionTimeoutMS: 30000,
-  socketTimeoutMS: 45000,
-  bufferMaxEntries: 0,
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-});
+// Alternative connection approach for SSL issues
+async function connectToMongoDB() {
+  try {
+    console.log("🔄 Attempting MongoDB connection...");
+
+    // Try connection with modern SSL options
+    const connectionOptions = {
+      serverSelectionTimeoutMS: 10000,
+      socketTimeoutMS: 45000,
+      connectTimeoutMS: 10000,
+      maxPoolSize: 10,
+      retryWrites: true,
+      retryReads: true,
+      ssl: true,
+      tlsAllowInvalidCertificates: true,
+      tlsAllowInvalidHostnames: false,
+    };
+
+    await mongoose.connect(dbUrl, connectionOptions);
+    console.log("✅ Connected to MongoDB Atlas successfully!");
+  } catch (error) {
+    console.error("❌ Initial connection failed, trying fallback approach...");
+
+    // Fallback: try with minimal SSL options
+    try {
+      const fallbackOptions = {
+        serverSelectionTimeoutMS: 15000,
+        socketTimeoutMS: 45000,
+        ssl: true,
+        tlsAllowInvalidCertificates: true,
+      };
+
+      await mongoose.connect(dbUrl, fallbackOptions);
+      console.log("✅ Connected to MongoDB using fallback options!");
+    } catch (fallbackError) {
+      console.error("❌ All connection attempts failed:");
+      console.error("Original error:", error.message);
+      console.error("Fallback error:", fallbackError.message);
+
+      console.error("\n🔧 Troubleshooting suggestions:");
+      console.error(
+        "1. Check if your IP address is whitelisted in MongoDB Atlas"
+      );
+      console.error("2. Verify the cluster is running and accessible");
+      console.error("3. Try connecting from a different network");
+      console.error(
+        "4. Check if corporate firewall is blocking the connection"
+      );
+
+      process.exit(1);
+    }
+  }
+}
+
+// Connect to MongoDB
+connectToMongoDB();
+
 const db = mongoose.connection;
-db.on("error", console.error.bind(console, "MongoDB connection error:"));
+
+db.on("error", (error) => {
+  console.error("❌ MongoDB connection error:");
+  console.error(error);
+
+  // If it's an SSL error, provide specific guidance
+  if (
+    (error.message && error.message.includes("SSL")) ||
+    error.message.includes("TLS")
+  ) {
+    console.error("🔒 SSL/TLS Error Detected:");
+    console.error("This might be due to:");
+    console.error("1. Network connectivity issues");
+    console.error("2. Firewall blocking MongoDB Atlas");
+    console.error("3. Invalid SSL certificates");
+    console.error("4. MongoDB Atlas cluster configuration");
+    console.error("\n💡 Troubleshooting steps:");
+    console.error("- Check your internet connection");
+    console.error("- Verify MongoDB Atlas cluster is active");
+    console.error("- Check IP whitelist in MongoDB Atlas");
+    console.error("- Try using a different network connection");
+  }
+});
+
+db.on("disconnected", () => {
+  console.warn("⚠️ MongoDB disconnected. Attempting to reconnect...");
+});
+
+db.on("reconnected", () => {
+  console.log("✅ MongoDB reconnected successfully");
+});
+
 db.once("open", function () {
-  console.log("Connected to MongoDB");
+  console.log("✅ Connected to MongoDB Atlas successfully!");
+  console.log("🗄️ Database:", db.name);
+  console.log("🔗 Connection state:", db.readyState);
 });
 
 app.listen(port, () => {
