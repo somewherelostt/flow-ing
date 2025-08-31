@@ -5,6 +5,9 @@
 backend/node_modules
 **/node_modules
 
+# package locks (auto-generated)
+backend/package-lock.json
+
 # next.js
 /.next/
 /out/
