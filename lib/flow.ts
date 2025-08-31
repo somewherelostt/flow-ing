@@ -283,61 +283,139 @@ export const createEvent = async (
   }
 };
 
-// Join event with payment
-export const joinEvent = async (eventId: number, price: number) => {
-  const transaction = `
-    import KaizenEvent from ${CONTRACT_ADDRESSES.KAIZEN_EVENT}
-    import FlowToken from ${CONTRACT_ADDRESSES.FLOW_TOKEN}
-    import FungibleToken from ${CONTRACT_ADDRESSES.FUNGIBLE_TOKEN}
-    
-    transaction(eventId: UInt64, amount: UFix64) {
-      let eventManagerRef: &{KaizenEvent.EventManagerPublic}
-      let paymentVault: @{FungibleToken.Vault}
-      let attendeeAddress: Address
-      
-      prepare(attendee: auth(BorrowValue) &Account) {
-        self.attendeeAddress = attendee.address
-        
-        // Get public reference to the EventManager
-        self.eventManagerRef = getAccount(${CONTRACT_ADDRESSES.KAIZEN_EVENT})
-          .capabilities.get<&{KaizenEvent.EventManagerPublic}>(KaizenEvent.EventPublicPath)
-          .borrow()
-          ?? panic("Could not get EventManager reference")
-        
-        // Withdraw payment from user's vault
-        let vaultRef = attendee.storage.borrow<auth(FungibleToken.Withdraw) &FlowToken.Vault>(from: /storage/flowTokenVault)
-          ?? panic("Could not borrow reference to the owner's Vault")
-        
-        self.paymentVault <- vaultRef.withdraw(amount: amount)
-      }
-      
-      execute {
-        let changeVault <- self.eventManagerRef.joinEvent(
-          eventId: eventId,
-          attendee: self.attendeeAddress,
-          payment: <-self.paymentVault
-        )
-        
-        // Handle any change (for free events)
-        if changeVault.balance > 0.0 {
-          let receiverRef = getAccount(self.attendeeAddress)
-            .capabilities.get<&{FungibleToken.Receiver}>(/public/flowTokenReceiver)
-            .borrow()
-            ?? panic("Could not borrow receiver reference")
-          
-          receiverRef.deposit(from: <-changeVault)
-        } else {
-          destroy changeVault
-        }
-        
-        log("Successfully joined event ".concat(eventId.toString()))
-      }
-    }
-  `;
-
+// Transaction verification and status checking
+export const getTransactionStatus = async (transactionId: string) => {
   try {
+    const result = await fcl.tx(transactionId).onceSealed();
+    return {
+      id: transactionId,
+      status: result.status,
+      statusCode: result.statusCode,
+      blockId: result.blockId,
+      events: result.events,
+      errorMessage: result.errorMessage,
+      isSealed: result.status === 4,
+      isExecuted: result.status >= 3,
+      isPending: result.status < 3,
+    };
+  } catch (error) {
+    console.error("Error getting transaction status:", error);
+    throw error;
+  }
+};
+
+export const waitForTransaction = async (
+  transactionId: string,
+  timeoutMs: number = 60000
+) => {
+  const startTime = Date.now();
+
+  while (Date.now() - startTime < timeoutMs) {
+    try {
+      const status = await getTransactionStatus(transactionId);
+
+      if (status.isSealed) {
+        return status;
+      }
+
+      if (status.statusCode === 1) {
+        // Error status
+        throw new Error(
+          `Transaction failed: ${status.errorMessage || "Unknown error"}`
+        );
+      }
+
+      // Wait before checking again
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+    } catch (error: unknown) {
+      if (
+        error instanceof Error &&
+        error.message.includes("Transaction failed")
+      ) {
+        throw error;
+      }
+      // Continue waiting for other errors
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+    }
+  }
+
+  throw new Error(
+    "Transaction timeout - transaction not sealed within expected time"
+  );
+};
+
+// Enhanced join event function with proper verification
+export const joinEventWithVerification = async (
+  eventId: number,
+  price: number
+) => {
+  try {
+    console.log(`Joining event ${eventId} with price ${price} FLOW`);
+
+    // First check if user has sufficient balance
+    const userAddress = await fcl.currentUser().snapshot();
+    if (!userAddress?.addr) {
+      throw new Error("User not authenticated");
+    }
+
+    const balance = await getUserFlowBalance(userAddress.addr);
+    if (balance < price) {
+      throw new Error(
+        `Insufficient balance. Required: ${price} FLOW, Available: ${balance} FLOW`
+      );
+    }
+
+    // Execute the transaction
     const txId = await fcl.mutate({
-      cadence: transaction,
+      cadence: `
+        import KaizenEvent from ${CONTRACT_ADDRESSES.KAIZEN_EVENT}
+        import FlowToken from ${CONTRACT_ADDRESSES.FLOW_TOKEN}
+        import FungibleToken from ${CONTRACT_ADDRESSES.FUNGIBLE_TOKEN}
+        
+        transaction(eventId: UInt64, amount: UFix64) {
+          let eventManagerRef: &{KaizenEvent.EventManagerPublic}
+          let paymentVault: @{FungibleToken.Vault}
+          let attendeeAddress: Address
+          
+          prepare(attendee: auth(BorrowValue) &Account) {
+            self.attendeeAddress = attendee.address
+            
+            // Get public reference to the EventManager
+            self.eventManagerRef = getAccount(${CONTRACT_ADDRESSES.KAIZEN_EVENT})
+              .capabilities.get<&{KaizenEvent.EventManagerPublic}>(KaizenEvent.EventPublicPath)
+              .borrow()
+              ?? panic("Could not get EventManager reference")
+            
+            // Withdraw payment from user's vault
+            let vaultRef = attendee.storage.borrow<auth(FungibleToken.Withdraw) &FlowToken.Vault>(from: /storage/flowTokenVault)
+              ?? panic("Could not borrow reference to the owner's Vault")
+            
+            self.paymentVault <- vaultRef.withdraw(amount: amount)
+          }
+          
+          execute {
+            let changeVault <- self.eventManagerRef.joinEvent(
+              eventId: eventId,
+              attendee: self.attendeeAddress,
+              payment: <-self.paymentVault
+            )
+            
+            // Handle any change (for free events)
+            if changeVault.balance > 0.0 {
+              let receiverRef = getAccount(self.attendeeAddress)
+                .capabilities.get<&{FungibleToken.Receiver}>(/public/flowTokenReceiver)
+                .borrow()
+                ?? panic("Could not borrow receiver reference")
+              
+              receiverRef.deposit(from: <-changeVault)
+            } else {
+              destroy changeVault
+            }
+            
+            log("Successfully joined event ".concat(eventId.toString()))
+          }
+        }
+      `,
       args: (arg: any, t: any) => [
         arg(eventId.toString(), t.UInt64),
         arg(price.toFixed(8), t.UFix64),
@@ -348,11 +426,34 @@ export const joinEvent = async (eventId: number, price: number) => {
       limit: 1000,
     });
 
-    return await fcl.tx(txId).onceSealed();
-  } catch (error) {
+    console.log(`Transaction submitted with ID: ${txId}`);
+
+    // Wait for transaction to be sealed
+    const result = await waitForTransaction(txId);
+
+    console.log(`Transaction sealed successfully:`, result);
+
+    return {
+      success: true,
+      transactionHash: txId,
+      ledger: result.blockId,
+      status: "sealed",
+      events: result.events,
+      result: result,
+    };
+  } catch (error: unknown) {
     console.error("Error joining event:", error);
-    throw error;
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Unknown error occurred",
+      transactionHash: null,
+    };
   }
+};
+
+// Original join event function (for backward compatibility)
+export const joinEvent = async (eventId: number, price: number) => {
+  return await joinEventWithVerification(eventId, price);
 };
 
 // Mint POAP NFT for event attendee

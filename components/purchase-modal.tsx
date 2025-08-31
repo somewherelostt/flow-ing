@@ -56,10 +56,10 @@ export function PurchaseModal({
     action: "Event Join",
   });
   const [showTransactionDrawer, setShowTransactionDrawer] = useState(false);
-  const { address } = useFlowWallet();
+  const { address, isConnected } = useFlowWallet();
 
   const handleJoinEvent = async () => {
-    if (!isWalletConnected || !address) {
+    if (!isConnected || !address) {
       onConnectWallet();
       return;
     }
@@ -75,6 +75,8 @@ export function PurchaseModal({
       // Join the event with FLOW payment
       const eventIdNumber = eventId ? parseInt(eventId) : 1;
       const priceNumber = eventPrice === "Free" ? 0 : parseFloat(priceInFLOW);
+
+      console.log(`Joining event ${eventIdNumber} with price ${priceNumber} FLOW`);
 
       const joinResult = await joinEvent(eventIdNumber, priceNumber);
 
@@ -115,6 +117,9 @@ export function PurchaseModal({
     eventPrice === "Free"
       ? networkFee
       : (parseFloat(priceInFLOW) + parseFloat(networkFee)).toFixed(3);
+
+  // Use the wallet connection status from context
+  const walletConnected = isConnected;
 
   if (!isOpen) return null;
 
@@ -212,7 +217,7 @@ export function PurchaseModal({
                 )}
 
                 {/* Wallet Connection Status */}
-                {!isWalletConnected && (
+                {!walletConnected && (
                   <div className="bg-orange-500/10 border border-orange-500/20 rounded-2xl p-4 mb-6">
                     <div className="flex items-center gap-2 mb-2">
                       <Wallet className="w-4 h-4 text-orange-500" />
@@ -233,7 +238,7 @@ export function PurchaseModal({
                   className="w-full bg-kaizen-yellow text-kaizen-black hover:bg-kaizen-yellow/90 font-semibold rounded-full h-12 flex items-center gap-2"
                 >
                   <Wallet className="w-4 h-4" />
-                  {isWalletConnected ? "Join Event" : "Connect Wallet to Join"}
+                  {walletConnected ? "Join Event" : "Connect Wallet to Join"}
                 </Button>
               </>
             )}

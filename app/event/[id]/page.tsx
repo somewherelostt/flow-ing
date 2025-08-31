@@ -330,6 +330,9 @@ export default function EventDetailPage({
         eventImage={event.imageUrl || "/placeholder.svg"}
         isWalletConnected={walletConnected}
         onConnectWallet={() => {}}
+        eventId={params.id}
+        organizerAddress={event.createdBy?._id}
+        hasNFTReward={true}
       />
 
       {/* Delete Confirmation Dialog */}
