@@ -8,34 +8,38 @@ import Event from "./models/Event.js";
 import { register, login, authMiddleware } from "./auth.js";
 import upload from "./upload.js";
 import path from "path";
-import { fileURLToPath } from 'url';
+import { fileURLToPath } from "url";
 
 // Get current directory for ES modules
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // Configure dotenv with explicit path and debug
-dotenv.config({ 
-  path: path.join(__dirname, '..', '.env'),
-  debug: process.env.NODE_ENV !== 'production'
+dotenv.config({
+  path: path.join(__dirname, "..", ".env"),
+  debug: process.env.NODE_ENV !== "production",
 });
 
 const app = express();
 const port = process.env.PORT || 4000;
 
-app.use(cors({
-  origin: [
-    'http://localhost:3000', 
-    'http://localhost:3001', 
-    'http://192.168.1.10:3000',
-    'https://kaizen-web3-app.vercel.app',
-    'https://kaizen-web3-app-git-main-somewherelostt.vercel.app',
-    'https://kaizen-x-delta.vercel.app',
-    /^https:\/\/kaizen-web3-app-.*\.vercel\.app$/,
-    /^https:\/\/kaizen-x-.*\.vercel\.app$/
-  ],
-  credentials: true
-}));
+app.use(
+  cors({
+    origin: [
+      "http://localhost:3000",
+      "http://localhost:3001",
+      "http://192.168.1.10:3000",
+      "https://kaizen-web3-app.vercel.app",
+      "https://kaizen-web3-app-git-main-somewherelostt.vercel.app",
+      "https://kaizen-x-delta.vercel.app",
+      // Add patterns for your new Vercel deployment
+      /^https:\/\/flow-ing-.*\.vercel\.app$/,
+      /^https:\/\/kaizen-web3-app-.*\.vercel\.app$/,
+      /^https:\/\/kaizen-x-.*\.vercel\.app$/,
+    ],
+    credentials: true,
+  })
+);
 
 app.use(express.json());
 app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
@@ -184,7 +188,9 @@ app.post("/api/events", upload.single("image"), async (req, res) => {
 
     // Validate date is in the future
     if (eventData.date <= new Date()) {
-      return res.status(400).json({ error: "Event date must be in the future" });
+      return res
+        .status(400)
+        .json({ error: "Event date must be in the future" });
     }
 
     if (req.file) {
@@ -221,7 +227,7 @@ app.get("/api/events/search/:query", async (req, res) => {
   try {
     const { query } = req.params;
     const events = await Event.find({
-      title: { $regex: query, $options: 'i' } // Case-insensitive search
+      title: { $regex: query, $options: "i" }, // Case-insensitive search
     }).populate("createdBy");
     res.json(events);
   } catch (err) {
@@ -272,14 +278,31 @@ app.delete("/api/events/:id", async (req, res) => {
 const dbUrl = process.env.DB_URL || process.env.DATABASE_URL;
 console.log("🔍 Environment check:");
 console.log("NODE_ENV:", process.env.NODE_ENV || "not set");
-console.log("DB_URL environment variable:", process.env.DB_URL ? "Set" : "NOT SET");
-console.log("DATABASE_URL environment variable:", process.env.DATABASE_URL ? "Set" : "NOT SET");
-console.log("Available environment variables:", Object.keys(process.env).filter(key => key.includes('DB') || key.includes('DATABASE')));
+console.log(
+  "DB_URL environment variable:",
+  process.env.DB_URL ? "Set" : "NOT SET"
+);
+console.log(
+  "DATABASE_URL environment variable:",
+  process.env.DATABASE_URL ? "Set" : "NOT SET"
+);
+console.log(
+  "Available environment variables:",
+  Object.keys(process.env).filter(
+    (key) => key.includes("DB") || key.includes("DATABASE")
+  )
+);
 
 if (!dbUrl) {
-  console.error("❌ Neither DB_URL nor DATABASE_URL environment variable is set!");
-  console.error("🔧 For Railway deployment: Set DB_URL in Railway Variables tab");
-  console.error("🔧 For local development: Ensure .env file exists with DB_URL");
+  console.error(
+    "❌ Neither DB_URL nor DATABASE_URL environment variable is set!"
+  );
+  console.error(
+    "🔧 For Railway deployment: Set DB_URL in Railway Variables tab"
+  );
+  console.error(
+    "🔧 For local development: Ensure .env file exists with DB_URL"
+  );
   console.error("📁 Current working directory:", process.cwd());
   console.error("📁 __dirname:", __dirname);
   process.exit(1);
@@ -288,7 +311,7 @@ if (!dbUrl) {
 console.log("✅ Database URL found, attempting connection...");
 console.log("🔒 Connection string preview:", dbUrl.substring(0, 20) + "...");
 
-if (!dbUrl.startsWith('mongodb://') && !dbUrl.startsWith('mongodb+srv://')) {
+if (!dbUrl.startsWith("mongodb://") && !dbUrl.startsWith("mongodb+srv://")) {
   console.error("❌ Invalid MongoDB connection string format!");
   console.error("Expected format: mongodb:// or mongodb+srv://");
   console.error("Received:", dbUrl);

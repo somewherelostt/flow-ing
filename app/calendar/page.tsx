@@ -31,6 +31,7 @@ import { getEventStatus } from "@/lib/eventUtils";
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
+import { apiUrl, imageUrl } from "@/lib/api";
 
 export default function CalendarPage() {
   const router = useRouter();
@@ -195,9 +196,7 @@ export default function CalendarPage() {
   // Fetch events from backend API
   const fetchEvents = async () => {
     try {
-      const res = await fetch(
-        "https://kaizenx-production.up.railway.app/api/events"
-      );
+      const res = await fetch(apiUrl("/api/events"));
       if (!res.ok) throw new Error("Failed to fetch events");
       const data = await res.json();
       setEvents(data);
@@ -353,7 +352,7 @@ export default function CalendarPage() {
                     <img
                       src={
                         event.imageUrl
-                          ? `https://kaizenx-production.up.railway.app${event.imageUrl}`
+                          ? imageUrl(event.imageUrl)
                           : "/placeholder.svg"
                       }
                       alt={event.title}

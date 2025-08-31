@@ -6,7 +6,7 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { BottomNav } from "@/components/bottom-nav";
 import { FlowWalletProvider } from "@/contexts/FlowWalletContext";
 import { AuthProvider } from "@/contexts/AuthContext";
-import { ClientProvider } from "./client-provider";
+import { ClientProvider } from "@/app/client-provider";
 
 const urbanist = Urbanist({
   subsets: ["latin"],
